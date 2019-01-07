@@ -1,0 +1,6 @@
+---
+- include: create-partitions.yml
+  tags:    create-partitions
+
+- include: create-luks.yml
+  tags:    create-luks
