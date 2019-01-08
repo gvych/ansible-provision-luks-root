@@ -1,0 +1,30 @@
+---
+
+- filesystem:
+    fstype: ext4
+    dev: /dev/mapper/root
+- filesystem:
+    fstype: ext2
+    dev: /dev/md1
+
+- mount:
+    src:    /dev/mapper/root
+    path:   /mnt
+    state:  mounted
+    fstype: ext4
+
+- mount:
+    src:    /dev/md1
+    path:   /mnt/boot
+    state:  mounted
+    fstype: ext2
+
+- shell: docker export root | tar xvf -  
+  args:
+    chdir: /mnt
+
+- shell: >
+    mount -o bind  /dev /mnt/dev  &&
+    mount -t sysfs none /mnt/sys  &&
+    mount -t proc  none /mnt/proc &&
+    mount -o bind  /run /mnt/run  || echo

@@ -4,3 +4,9 @@
 
 - include: create-luks.yml
   tags:    create-luks
+
+- include: create-root-partition.yml
+  tags:    create-root-partition
+
+- include: configure-os.yml
+  tags:    configure-os
