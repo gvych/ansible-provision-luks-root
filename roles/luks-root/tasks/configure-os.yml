@@ -1,7 +1,6 @@
 ---
-
 - shell: echo "UUID=\"`blkid /dev/md1 -s UUID -o value`\" / ext2 defaults 0 2" >> /mnt/etc/fstab
-- shell: echo 'root UUID=`blkid /dev/md2 -s UUID -o value` none luks,discard'  >  /mnt/etc/crypttab
+- shell: echo "root UUID=`blkid /dev/md2 -s UUID -o value` none luks,discard"  >  /mnt/etc/crypttab
 
 - copy:
     dest: "/mnt/etc/initramfs-tools/conf.d/cryptsetup"
@@ -19,10 +18,11 @@
     - /mnt/root/.ssh/
     - /mnt/etc/initramfs-tools/root/.ssh/
       
+
 - lineinfile:
     dest: "{{item.file}}"
-    line: '{{item.var}}="{{ ansible_facts.default_ipv4.address }}::{{ ansible_facts.default_ipv4.gateway }}:{{ansible_facts.default_ipv4.netmask }}:hostname:{{ansible_facts.default_ipv4.alias}}"'
-    regexp: "{{item.var}}="
+    line: '{{item.var}}="{{ ansible_default_ipv4.address }}::{{ ansible_default_ipv4.gateway }}:{{ansible_default_ipv4.netmask }}:hostname:{{ansible_default_ipv4.alias}}"'
+    regexp: "{{item.var}}"
   loop:
     - {var: "GRUB_CMDLINE_LINUX=ip", file: /mnt/etc/default/grub                   }
     - {var: DEVICE,                  file: /mnt/etc/initramfs-tools/initramfs.conf }
