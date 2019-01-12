@@ -1,2 +1,13 @@
 ---
 # defaults file for luks-root
+luks_disks:
+  #- /dev/sda
+  - /dev/sdb
+  - /dev/sdc
+
+luks_boot_md: "/dev/md2"
+luks_root_md: "/dev/md3"
+
+luks_raids:
+  - {src: /dev/mapper/root, type: ext4}
+  - {src: "{{luks_boot_md}}", type: ext2}

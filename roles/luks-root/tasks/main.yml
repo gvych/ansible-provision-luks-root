@@ -1,12 +1,15 @@
 ---
-- include: create-partitions.yml
-  tags:    create-partitions
+- include: prerequisites.yml
+  tags:    prerequisites
 
-- include: create-luks.yml
-  tags:    create-luks
+- include: partitions.yml
+  tags:    partitions
 
-- include: create-root-partition.yml
-  tags:    create-root-partition
+- include: luks.yml
+  tags:    luks
 
-- include: configure-os.yml
-  tags:    configure-os
+- include: mount.yml
+  tags:    mount
+
+- include: deploy-os.yml
+  tags:    deploy-os

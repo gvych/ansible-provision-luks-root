@@ -4,6 +4,7 @@
     passphrase: "{{ lookup('password', '/dev/null length=25 chars=ascii_letters') }}"
 
 - local_action: command ansible-vault encrypt_string --vault-id 'luks@password.sh' --name "passphrase_{{inventory_hostname|regex_replace('-','_')}}" '{{passphrase}}'
+  become: false
   register: encrypted_passphrase
 
 - local_action:
@@ -12,8 +13,8 @@
     path:  vault.yml
     insertbefore: BOF
     marker_begin: "{{inventory_hostname}}"
+  become: false
 
 
-- shell: echo {{ passphrase }} | cryptsetup luksFormat /dev/md2
-
-- shell: echo {{ passphrase }} | cryptsetup luksOpen   /dev/md2 root
+- shell: echo {{ passphrase }} | cryptsetup luksFormat /dev/md3
+- shell: echo {{ passphrase }} | cryptsetup luksOpen   /dev/md3 root

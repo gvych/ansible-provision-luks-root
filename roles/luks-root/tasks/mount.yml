@@ -1,0 +1,24 @@
+---
+
+- filesystem:
+    fstype: "{{item.type}}"
+    dev: "{{item.src}}"
+  loop: "{{luks_raids}}"
+
+- mount:
+    src:    "{{item.src}}"
+    path:   /mnt
+    state:  mounted
+    fstype: "{{item.type}}"
+  loop: "{{luks_raids}}"
+
+
+- shell: docker export root | tar xvf -
+  args:
+    chdir: /mnt
+
+- shell: >
+    mount -o bind  /dev /mnt/dev  &&
+    mount -t sysfs none /mnt/sys  &&
+    mount -t proc  none /mnt/proc &&
+    mount -o bind  /run /mnt/run  || echo

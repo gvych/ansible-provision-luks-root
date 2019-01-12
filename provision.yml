@@ -1,8 +1,8 @@
 ---
 - hosts: all
-  #gather_facts: false
   vars_files: 
     - vault.yml
+  gather_facts: false
   roles:
     - luks-root
 
