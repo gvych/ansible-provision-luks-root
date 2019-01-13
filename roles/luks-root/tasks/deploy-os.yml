@@ -1,11 +1,13 @@
 ---
+- setup:
+
 - lineinfile:
-    line: "UUID=\"{{ansible_devices[luks_boot_md].links.uuids[0]}}\" /boot ext2 defaults 0 2" >> /mnt/etc/fstab
+    line: 'UUID={{ansible_devices[luks_boot_md].links.uuids[0]}} /boot ext2 defaults 0 2'
     dest: /mnt/etc/fstab
 
 - lineinfile:
     dest:  /mnt/etc/crypttab
-    line: "root UUID={{vars[luks_root_md].links.uuids[0]}} none luks,discard"
+    line: "root UUID={{ansible_devices[luks_root_md].links.uuids[0]}} none luks,discard"
 
 - copy:
     dest:    /mnt/etc/resolv.conf #not saved inside Dockerfile

@@ -12,7 +12,6 @@
     fstype: "{{item.type}}"
   loop: "{{luks_raids}}"
 
-
 - name: mount | docker export
   shell: docker export root | tar xvf -
   args:
