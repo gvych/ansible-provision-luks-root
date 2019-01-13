@@ -5,12 +5,12 @@ luks_disks:
   - /dev/sdb
   - /dev/sdc
 
-luks_boot_md: "/dev/md1"
-luks_root_md: "/dev/md2"
+luks_boot_md: "md1"
+luks_root_md: "md2"
 
 luks_raids:
   - {src: /dev/mapper/root, type: ext4}
-  - {src: "{{luks_boot_md}}", type: ext2, path: /boot}
+  - {src: "/dev/{{luks_boot_md}}", type: ext2, path: /boot}
 
 luks_parted_script: >
    mklabel gpt

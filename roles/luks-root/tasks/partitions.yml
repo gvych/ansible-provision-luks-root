@@ -7,5 +7,5 @@
 - name: "partitions | create software raid"
   shell: mdadm --create /dev/md{{ item }} --level=1 --run --raid-devices={{luks_disks|length}} --metadata=1.0 {{luks_disks[0]}}{{ item }} {{luks_disks[1]}}{{ item }}
   args:
-    creates: "{{luks_root_md}}"
+    creates: "/dev/{{luks_root_md}}"
   loop: [1,2]

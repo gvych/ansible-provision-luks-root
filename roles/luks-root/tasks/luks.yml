@@ -18,6 +18,6 @@
   become: false
 
 - name: luks | format luks device
-  shell: echo {{ passphrase }} | cryptsetup luksFormat {{luks_root_md}}
+  shell: echo {{ passphrase }} | cryptsetup luksFormat /dev/{{luks_root_md}}
 - name: luks | open luks device
-  shell: echo {{ passphrase }} | cryptsetup luksOpen   {{luks_root_md}} root
+  shell: echo {{ passphrase }} | cryptsetup luksOpen   /dev/{{luks_root_md}} root

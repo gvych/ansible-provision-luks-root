@@ -1,6 +1,11 @@
 ---
-- shell: echo "UUID=\"`blkid {{luks_boot_md}} -s UUID -o value`\" /boot ext2 defaults 0 2" >> /mnt/etc/fstab
-- shell: echo "root UUID=`blkid {{luks_root_md}} -s UUID -o value` none luks,discard"  >  /mnt/etc/crypttab
+- lineinfile:
+    line: "UUID=\"{{ansible_devices[luks_boot_md].links.uuids[0]}}\" /boot ext2 defaults 0 2" >> /mnt/etc/fstab
+    dest: /mnt/etc/fstab
+
+- lineinfile:
+    dest:  /mnt/etc/crypttab
+    line: "root UUID={{vars[luks_root_md].links.uuids[0]}} none luks,discard"
 
 - copy:
     dest:    /mnt/etc/resolv.conf #not saved inside Dockerfile
@@ -19,23 +24,22 @@
     line:   '{{item.var}}{{ ansible_default_ipv4.address }}::{{ ansible_default_ipv4.gateway }}:{{ansible_default_ipv4.netmask }}:hostname:eth0"'
     regexp: "{{item.var | regex_replace('=.*$','') }}"
   loop:
-    - {var: 'GRUB_CMDLINE_LINUX="net.ifnames=0 text debug=vc ip=', file: /mnt/etc/default/grub }
     - {var: 'DEVICE="IP=',               file: /mnt/etc/initramfs-tools/initramfs.conf }
+    #- {var: 'GRUB_CMDLINE_LINUX="net.ifnames=0 text debug=vc ip=', file: /mnt/etc/default/grub }
 
-- lineinfile:
-    dest:   "/mnt/etc/initramfs-tools/initramfs.conf"
-    line:   "DROPBEAR=y"
+#- lineinfile:
+#    dest:   "/mnt/etc/initramfs-tools/initramfs.conf"
+#    line:   "DROPBEAR=y"
+#
+#- lineinfile:
+#    dest:    /mnt/etc/default/dropbear
+#    line:   'NO_START=0'
+#    regexp: 'NO_START='
 
-- lineinfile:
-    dest:    /mnt/etc/default/dropbear
-    line:   'NO_START=0'
-    regexp: 'NO_START='
-  tags: q
-- lineinfile:
-    dest:    /mnt/etc/default/grub
-    line:   'GRUB_CMDLINE_LINUX_DEFAULT="text debug"'
-    regexp: 'GRUB_CMDLINE_LINUX_DEFAULT'
-  tags: q
+#- lineinfile:
+#    dest:    /mnt/etc/default/grub
+#    line:   'GRUB_CMDLINE_LINUX_DEFAULT="text debug"'
+#    regexp: 'GRUB_CMDLINE_LINUX_DEFAULT'
 
 - shell: >
     chroot /mnt /bin/bash -c "update-grub2 && update-initramfs -u -v "
