@@ -7,13 +7,14 @@
 
 - mount:
     src:    "{{item.src}}"
-    path:   /mnt
+    path:   /mnt{{item.path|d('')}}
     state:  mounted
     fstype: "{{item.type}}"
   loop: "{{luks_raids}}"
 
 
-- shell: docker export root | tar xvf -
+- name: mount | docker export
+  shell: docker export root | tar xvf -
   args:
     chdir: /mnt
 

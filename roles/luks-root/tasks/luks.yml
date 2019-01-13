@@ -1,13 +1,15 @@
 
-- name: generate passphrase
+- name: luks | generate passphrase
   set_fact:
     passphrase: "{{ lookup('password', '/dev/null length=25 chars=ascii_letters') }}"
 
-- local_action: command ansible-vault encrypt_string --vault-id 'luks@password.sh' --name "passphrase_{{inventory_hostname|regex_replace('-','_')}}" '{{passphrase}}'
+- name: luks | encrypt vault
+  local_action: command ansible-vault encrypt_string --vault-id 'luks@password.sh' --name "passphrase_{{inventory_hostname|regex_replace('-','_')}}" '{{passphrase}}'
   become: false
   register: encrypted_passphrase
 
-- local_action:
+- name: luks | store vault
+  local_action:
     module: blockinfile
     block: "{{ encrypted_passphrase.stdout }}"
     path:  vault.yml
@@ -15,6 +17,7 @@
     marker_begin: "{{inventory_hostname}}"
   become: false
 
-
-- shell: echo {{ passphrase }} | cryptsetup luksFormat /dev/md3
-- shell: echo {{ passphrase }} | cryptsetup luksOpen   /dev/md3 root
+- name: luks | format luks device
+  shell: echo {{ passphrase }} | cryptsetup luksFormat {{luks_root_md}}
+- name: luks | open luks device
+  shell: echo {{ passphrase }} | cryptsetup luksOpen   {{luks_root_md}} root

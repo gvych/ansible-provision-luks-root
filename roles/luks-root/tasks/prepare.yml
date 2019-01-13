@@ -1,4 +1,5 @@
 ---
+
 # CLEANUP
 
 - shell: umount /mnt/boot /mnt cryptsetup close root
@@ -9,14 +10,14 @@
   args:
     removes: /dev/mapper/root
 
-- name: cleanup | get list of mdadm devices
+- name: prepare | get list of mdadm devices
   find:
     paths: /dev
     patterns: "md?"
     file_type: any
   register: md_devs
 
-- name: create-partitions | mdadm purge
+- name: prepare | mdadm purge
   shell: mdadm --stop --force {{item.path}}
   loop: "{{ md_devs.files }}"
 
@@ -25,9 +26,10 @@
   loop: "{{luks_disks}}"
 
 # INSTALL DEPENDENCIES
-- package:
-    name: mdadm
+- name: prepare | install mdadm
+  package: name=mdadm
 
-- shell: curl -sSL https://get.docker.com/ | sh && docker run  --name root vych/ubuntu-luks-root
+- name: prepare | docker pull
+  shell: curl -sSL https://get.docker.com/ | sh && docker run  --name root vych/ubuntu-luks-root
   args:
     creates: /usr/bin/docker

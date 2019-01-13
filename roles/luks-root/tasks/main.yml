@@ -1,6 +1,6 @@
 ---
-- include: prerequisites.yml
-  tags:    prerequisites
+- include: prepare.yml
+  tags:    prepare
 
 - include: partitions.yml
   tags:    partitions

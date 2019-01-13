@@ -5,9 +5,21 @@ luks_disks:
   - /dev/sdb
   - /dev/sdc
 
-luks_boot_md: "/dev/md2"
-luks_root_md: "/dev/md3"
+luks_boot_md: "/dev/md1"
+luks_root_md: "/dev/md2"
 
 luks_raids:
   - {src: /dev/mapper/root, type: ext4}
-  - {src: "{{luks_boot_md}}", type: ext2}
+  - {src: "{{luks_boot_md}}", type: ext2, path: /boot}
+
+luks_parted_script: >
+   mklabel gpt
+   disk_set pmbr_boot on
+   unit GB
+   mkpart primary 3MB 200MB
+   set 1 raid on
+   mkpart primary 200MB 100%
+   set 2 raid on
+   mkpart primary 1MB 3MB
+   name 3 grub
+   set 3 bios_grub on

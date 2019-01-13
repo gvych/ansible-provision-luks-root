@@ -1,24 +1,11 @@
 ---
 
-- name: "create partitions"
-    #disk_set pmbr_boot on
-  shell: >
-    /sbin/parted -s {{item}}
-    mklabel gpt
-    unit GB
-    mkpart primary 1MB 3MB
-    name 1 grub
-    set 1 bios_grub on
-    mkpart primary 3MB 200MB
-    set 2 raid on
-    mkpart primary 200MB 100%
-    set 3 raid on
+- name: "partitions | create partitions"
+  shell: /sbin/parted -s {{item}} {{luks_parted_script}}
   loop: "{{luks_disks}}"
-- fail:
 
-
-- name: "create software raid"
-  shell: mdadm --create /dev/md{{ item }} --level=1 --run --raid-devices=2 --metadata=1.0 {{luks_disks[0]}}{{ item }} {{luks_disks[1]}}{{ item }}
+- name: "partitions | create software raid"
+  shell: mdadm --create /dev/md{{ item }} --level=1 --run --raid-devices={{luks_disks|length}} --metadata=1.0 {{luks_disks[0]}}{{ item }} {{luks_disks[1]}}{{ item }}
   args:
-    creates: /dev/md3
-  loop: [2,3]
+    creates: "{{luks_root_md}}"
+  loop: [1,2]
