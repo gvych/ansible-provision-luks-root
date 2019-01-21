@@ -1,50 +1,56 @@
 ---
-- setup:
+- name: deploy-os | docker export
+  shell: docker export root | tar xvf -
+  args:
+    chdir: /mnt
+  tags: docker-export
+
+- name: deploy-os | gather facts
+  setup:
 
 - lineinfile:
-    line: 'UUID={{ansible_devices[luks_boot_md].links.uuids[0]}} /boot ext2 defaults 0 2'
-    dest: /mnt/etc/fstab
-
-- lineinfile:
-    dest:  /mnt/etc/crypttab
-    line: "root UUID={{ansible_devices[luks_root_md].links.uuids[0]}} none luks,discard"
+    line: "{{item.line}}"
+    dest: "{{item.dest}}"
+  loop:
+    - dest: /mnt/etc/fstab
+      line: "UUID={{ansible_devices[luks_boot_md].links.uuids[0]}} /boot ext2 defaults 0 2"
+    - dest:  /mnt/etc/crypttab
+      line: "root UUID={{ansible_devices[luks_root_md].links.uuids[0]}} none luks,discard"
 
 - copy:
-    dest:    /mnt/etc/resolv.conf #not saved inside Dockerfile
-    content: "nameserver 8.8.8.8"
+    dest:    "{{item.dest}}"
+    content: "{{item.content}}"
+  loop:
+    - dest:    "/mnt/etc/resolv.conf"
+      content: "nameserver 8.8.8.8"
+    - dest:    "/mnt/etc/network/interfaces.d/eth0"
+      content: |
+        auto eth0
+        iface eth0 inet static
+        address {{ ansible_facts.default_ipv4.address }}
+        netmask {{ ansible_facts.default_ipv4.netmask }}
+        gateway {{ ansible_facts.default_ipv4.gateway }}
 
 - copy:
     dest:    "{{item}}/authorized_keys"
-    src:     ~/.ssh/id_rsa.pub
+    src:     "{{ssh_keys_file|d('~/.ssh/id_rsa.pub')}}"
     mode:    0644
   loop:
     - /mnt/root/.ssh/
     - /mnt/etc/dropbear-initramfs/
 
 - lineinfile:
-    dest:   "{{item.file}}"
-    line:   '{{item.var}}{{ ansible_default_ipv4.address }}::{{ ansible_default_ipv4.gateway }}:{{ansible_default_ipv4.netmask }}:hostname:eth0"'
-    regexp: "{{item.var | regex_replace('=.*$','') }}"
-  loop:
-    - {var: 'DEVICE="IP=',               file: /mnt/etc/initramfs-tools/initramfs.conf }
-    #- {var: 'GRUB_CMDLINE_LINUX="net.ifnames=0 text debug=vc ip=', file: /mnt/etc/default/grub }
-
-#- lineinfile:
-#    dest:   "/mnt/etc/initramfs-tools/initramfs.conf"
-#    line:   "DROPBEAR=y"
-#
-#- lineinfile:
-#    dest:    /mnt/etc/default/dropbear
-#    line:   'NO_START=0'
-#    regexp: 'NO_START='
-
-#- lineinfile:
-#    dest:    /mnt/etc/default/grub
-#    line:   'GRUB_CMDLINE_LINUX_DEFAULT="text debug"'
-#    regexp: 'GRUB_CMDLINE_LINUX_DEFAULT'
+    dest:   /mnt/etc/initramfs-tools/initramfs.conf
+    regexp: "DEVICE="
+    line:   'DEVICE="IP={{ ansible_default_ipv4.address }}::{{ ansible_default_ipv4.gateway }}:{{ansible_default_ipv4.netmask }}:hostname:eth0"'
 
 - shell: >
-    chroot /mnt /bin/bash -c "update-grub2 && update-initramfs -u -v "
+    chroot /mnt /bin/bash -c "
+    DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server; rm -v /etc/dropbear*/dropbear_dss_host_key;
+    /usr/lib/dropbear/dropbearconvert openssh dropbear /etc/ssh/ssh_host_ecdsa_key /etc/dropbear-initramfs/dropbear_ecdsa_host_key;
+    /usr/lib/dropbear/dropbearconvert openssh dropbear /etc/ssh/ssh_host_rsa_key /etc/dropbear-initramfs/dropbear_rsa_host_key;
+    update-grub2 && update-initramfs -u
+    "
 
 - shell: chroot /mnt grub-install {{item}}
   loop: "{{luks_disks}}"

@@ -13,7 +13,7 @@
     module: blockinfile
     block: "{{ encrypted_passphrase.stdout }}"
     path:  vault.yml
-    insertbefore: BOF
+    insertbefore: EOF
     marker_begin: "{{inventory_hostname}}"
   become: false
 

@@ -1,9 +1,9 @@
 ---
 # defaults file for luks-root
 luks_disks:
-  #- /dev/sda
+  - /dev/sda
   - /dev/sdb
-  - /dev/sdc
+  #- /dev/sdc
 
 luks_boot_md: "md1"
 luks_root_md: "md2"

@@ -12,11 +12,6 @@
     fstype: "{{item.type}}"
   loop: "{{luks_raids}}"
 
-- name: mount | docker export
-  shell: docker export root | tar xvf -
-  args:
-    chdir: /mnt
-
 - shell: >
     mount -o bind  /dev /mnt/dev  &&
     mount -t sysfs none /mnt/sys  &&

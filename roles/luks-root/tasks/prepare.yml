@@ -2,7 +2,7 @@
 
 # CLEANUP
 
-- shell: umount /mnt/boot /mnt cryptsetup close root
+- shell: umount /mnt/boot /mnt
   args:
     removes: /mnt/boot
 
@@ -26,10 +26,12 @@
   loop: "{{luks_disks}}"
 
 # INSTALL DEPENDENCIES
-- name: prepare | install mdadm
-  package: name=mdadm
+#- name: prepare | install mdadm
+  #package: name=mdadm
 
 - name: prepare | docker pull
-  shell: curl -sSL https://get.docker.com/ | sh && docker run  --name root vych/ubuntu-luks-root
+  shell: >
+    curl -sSL https://get.docker.com/ | sh && docker pull vych/ubuntu-luks-root
+    && docker run  --name root vych/ubuntu-luks-root
   args:
     creates: /usr/bin/docker
