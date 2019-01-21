@@ -1,27 +1,35 @@
 ---
 - hosts: all
-  vars_files: 
+  vars_files:
     - vault.yml
   gather_facts: false
   roles:
-    - luks-root
+    - role: luks-root
+      tags: luks-root
   post_tasks:
-    - shell: reboot
-      poll:  0
-      async: 1
+
+    - raw: 'ls -l /lib/cryptsetup/passfifo 2>/dev/null'
+      register: boot
       ignore_errors: yes
 
-    - local_action: wait_for port=22 host={{ ansible_host }} timeout=1600 delay=30
-      register: wait
-      until: wait|succeeded
-      become: false
+    - block:
+      - shell: reboot
+        poll:  0
+        async: 1
+        ignore_errors: yes
+
+      - local_action: wait_for port={{ ansible_port }} host={{ ansible_host }} timeout=1600 delay=30
+        register: wait
+        until: wait is succeeded
+        become: false
+
+      when:  boot.rc != 1
 
     - raw: 'echo -n {{ vars["passphrase_" + inventory_hostname|d(passphrase)|regex_replace("-","_")] }}>/lib/cryptsetup/passfifo'
       vars:
         ansible_ssh_user: 'root'
 
-    - local_action: wait_for port=22 host={{ ansible_host }} timeout=1600 delay=10
+    - local_action: wait_for port={{ ansible_port }} host={{ ansible_host }} timeout=1600 delay=10
       register: wait
-      until: wait|succeeded
+      until: wait is succeeded
       become: false
-
