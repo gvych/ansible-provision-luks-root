@@ -13,7 +13,8 @@
   loop: "{{luks_raids}}"
 
 - shell: >
+    bash -c "mkdir -p /mnt/{dev,sys,proc,run}" &&
     mount -o bind  /dev /mnt/dev  &&
     mount -t sysfs none /mnt/sys  &&
     mount -t proc  none /mnt/proc &&
-    mount -o bind  /run /mnt/run  || echo
+    mount -o bind  /run /mnt/run

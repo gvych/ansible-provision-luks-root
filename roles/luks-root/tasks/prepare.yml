@@ -2,7 +2,7 @@
 
 # CLEANUP
 
-- shell: umount /mnt/boot /mnt
+- shell: umount /mnt/* /mnt 2>/dev/null || true
   args:
     removes: /mnt/boot
 
@@ -29,9 +29,8 @@
 #- name: prepare | install mdadm
   #package: name=mdadm
 
-- name: prepare | docker pull
+- name: prepare | dockerd install
   shell: >
-    curl -sSL https://get.docker.com/ | sh && docker pull vych/ubuntu-luks-root
-    && docker run  --name root vych/ubuntu-luks-root
+    curl -sSL https://get.docker.com/ | sh
   args:
     creates: /usr/bin/docker

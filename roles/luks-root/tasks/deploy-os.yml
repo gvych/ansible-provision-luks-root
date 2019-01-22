@@ -1,4 +1,11 @@
 ---
+
+- name: prepare | docker pull
+  shell: >
+    docker rm root &&
+    docker pull vych/ubuntu-luks-root &&
+    docker run  --name root vych/ubuntu-luks-root
+
 - name: deploy-os | docker export
   shell: docker export root | tar xvf -
   args:
@@ -46,7 +53,7 @@
 
 - shell: >
     chroot /mnt /bin/bash -c "
-    DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server; rm -v /etc/dropbear*/dropbear_dss_host_key;
+    DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server; rm -v /etc/dropbear*/dropbear_dss_host_key || true;
     /usr/lib/dropbear/dropbearconvert openssh dropbear /etc/ssh/ssh_host_ecdsa_key /etc/dropbear-initramfs/dropbear_ecdsa_host_key;
     /usr/lib/dropbear/dropbearconvert openssh dropbear /etc/ssh/ssh_host_rsa_key /etc/dropbear-initramfs/dropbear_rsa_host_key;
     update-grub2 && update-initramfs -u
