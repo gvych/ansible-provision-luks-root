@@ -25,7 +25,7 @@
 
       when:  boot.rc != 1
 
-    - raw: 'echo -n {{ vars["passphrase_" + inventory_hostname|d(passphrase)|regex_replace("-","_")] }}>/lib/cryptsetup/passfifo'
+    - raw: 'echo -n {{ vars["passphrase_" + inventory_hostname|regex_replace("-","_")] | d(passphrase) }}>/lib/cryptsetup/passfifo'
       vars:
         ansible_ssh_user: 'root'
 
