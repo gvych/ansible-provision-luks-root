@@ -31,7 +31,7 @@
 #- name: prepare | install mdadm
   #package: name=mdadm
 
-- name: prepare | install dockerd 
+- name: prepare | install dockerd
   shell: >
     curl -sSL https://get.docker.com/ | sh
   args:

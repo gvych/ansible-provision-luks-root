@@ -23,5 +23,5 @@ luks_lvm_name:   vg   #hardcoded inside Dockerfile
 luks_root_size:  20g
 
 luks_mount_points:
-  - {src: /dev/mapper/{{luks_lvm_name}}-root, type: ext4}
+  - {src: "/dev/mapper/{{luks_lvm_name}}-root", type: ext4}
   - {src: "/dev/{{luks_boot_md}}", type: ext2, path: /boot}

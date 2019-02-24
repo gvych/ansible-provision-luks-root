@@ -1,5 +1,11 @@
 ---
 
+- name: mount-chroot | format filesystems
+  filesystem:
+    fstype: "{{item.type}}"
+    dev: "{{item.src}}"
+  loop: "{{luks_mount_points}}"
+
 - name: mount-chroot | mount luks_mount_points in chroot
   mount:
     src:    "{{item.src}}"
@@ -21,9 +27,10 @@
 - name: mount-chroot | mount system dir in chroot
   mount:
       path: "/mnt/{{item}}"
-      src:  "{{item}}"
+      src:  "/{{item}}"
       opts: bind
       state: mounted
+      fstype: none
   loop:
     - dev
     - sys

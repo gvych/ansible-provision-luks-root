@@ -5,8 +5,8 @@
 - include: software-raid.yml
   tags:    software-raid
 
-- include: luks.yml
-  tags:    luks
+- include: luks-and-lvm.yml
+  tags:    luks-and-lvm
 
 - include: mount-chroot.yml
   tags:    mount-chroot

@@ -1,11 +1,11 @@
 ---
 
-- name: prepare | docker pull
+- name: deploy-os | pull OS image via docker
   shell: >
     docker pull vych/ubuntu-luks-root &&
     docker run  --name root vych/ubuntu-luks-root
 
-- name: deploy-os | docker export
+- name: deploy-os | deploy OS using "docker export"
   shell: docker export root | tar xvf -
   args:
     chdir: /mnt
