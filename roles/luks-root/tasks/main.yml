@@ -2,14 +2,14 @@
 - include: prepare.yml
   tags:    prepare
 
-- include: partitions.yml
-  tags:    partitions
+- include: software-raid.yml
+  tags:    software-raid
 
 - include: luks.yml
   tags:    luks
 
-- include: mount.yml
-  tags:    mount
+- include: mount-chroot.yml
+  tags:    mount-chroot
 
 - include: deploy-os.yml
   tags:    deploy-os

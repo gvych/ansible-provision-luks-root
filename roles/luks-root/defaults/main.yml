@@ -3,14 +3,6 @@
 luks_disks:
   - /dev/sda
   - /dev/sdb
-  #- /dev/sdc
-
-luks_boot_md: "md1"
-luks_root_md: "md2"
-
-luks_raids:
-  - {src: /dev/mapper/root, type: ext4}
-  - {src: "/dev/{{luks_boot_md}}", type: ext2, path: /boot}
 
 luks_parted_script: >
    mklabel gpt
@@ -23,3 +15,13 @@ luks_parted_script: >
    mkpart primary 1MB 3MB
    name 3 grub
    set 3 bios_grub on
+
+luks_boot_md:    md1
+luks_root_md:    md2
+luks_mapp_name:  luks #name of LUKS mapping of encrypted device
+luks_lvm_name:   vg   #hardcoded inside Dockerfile
+luks_root_size:  20g
+
+luks_mount_points:
+  - {src: /dev/mapper/{{luks_lvm_name}}-root, type: ext4}
+  - {src: "/dev/{{luks_boot_md}}", type: ext2, path: /boot}

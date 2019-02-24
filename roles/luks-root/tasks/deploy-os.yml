@@ -2,7 +2,6 @@
 
 - name: prepare | docker pull
   shell: >
-    docker rm root &&
     docker pull vych/ubuntu-luks-root &&
     docker run  --name root vych/ubuntu-luks-root
 
@@ -15,16 +14,18 @@
 - name: deploy-os | gather facts
   setup:
 
-- lineinfile:
+- name: deploy-os | update fstab,crypttab
+  lineinfile:
     line: "{{item.line}}"
     dest: "{{item.dest}}"
   loop:
     - dest: /mnt/etc/fstab
       line: "UUID={{ansible_devices[luks_boot_md].links.uuids[0]}} /boot ext2 defaults 0 2"
     - dest:  /mnt/etc/crypttab
-      line: "root UUID={{ansible_devices[luks_root_md].links.uuids[0]}} none luks,discard"
+      line: "{{luks_mapp_name}} UUID={{ansible_devices[luks_root_md].links.uuids[0]}} none luks,discard"
 
-- copy:
+- name: deploy-os | copy resolv.conf,interfaces.d
+  copy:
     dest:    "{{item.dest}}"
     content: "{{item.content}}"
   loop:
@@ -38,7 +39,8 @@
         netmask {{ ansible_facts.default_ipv4.netmask }}
         gateway {{ ansible_facts.default_ipv4.gateway }}
 
-- copy:
+- name: deploy-os | upload authorized_keys
+  copy:
     dest:    "{{item}}/authorized_keys"
     src:     "{{ssh_keys_file|d('~/.ssh/id_rsa.pub')}}"
     mode:    0644
@@ -46,12 +48,14 @@
     - /mnt/root/.ssh/
     - /mnt/etc/dropbear-initramfs/
 
-- lineinfile:
+- name: deploy-os | update initramfs.conf
+  lineinfile:
     dest:   /mnt/etc/initramfs-tools/initramfs.conf
     regexp: "DEVICE="
     line:   'DEVICE="IP={{ ansible_default_ipv4.address }}::{{ ansible_default_ipv4.gateway }}:{{ansible_default_ipv4.netmask }}:hostname:eth0"'
 
-- shell: >
+- name: deploy-os | convert ssh keys, update-initrafms
+  shell: >
     chroot /mnt /bin/bash -c "
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server; rm -v /etc/dropbear*/dropbear_dss_host_key || true;
     /usr/lib/dropbear/dropbearconvert openssh dropbear /etc/ssh/ssh_host_ecdsa_key /etc/dropbear-initramfs/dropbear_ecdsa_host_key;
@@ -59,5 +63,6 @@
     update-grub2 && update-initramfs -u
     "
 
-- shell: chroot /mnt grub-install {{item}}
+- name: deploy-os | grub-install
+  shell: chroot /mnt grub-install {{item}}
   loop: "{{luks_disks}}"

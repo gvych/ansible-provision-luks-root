@@ -2,11 +2,13 @@
 
 # CLEANUP
 
-- shell: umount /mnt/* /mnt 2>/dev/null || true
+- name: prepare | cleanup stale chroot mounts
+  shell: umount /mnt/* /mnt 2>/dev/null || true
   args:
     removes: /mnt/boot
 
-- shell: cryptsetup close root
+- name: prepare | cleanup stale luks
+  shell: cryptsetup close root
   args:
     removes: /dev/mapper/root
 
@@ -21,7 +23,7 @@
   shell: mdadm --stop --force {{item.path}}
   loop: "{{ md_devs.files }}"
 
-- name: "wipefs"
+- name: prepare | wipefs disks
   shell: wipefs -a {{item}}
   loop: "{{luks_disks}}"
 
@@ -29,7 +31,7 @@
 #- name: prepare | install mdadm
   #package: name=mdadm
 
-- name: prepare | dockerd install
+- name: prepare | install dockerd 
   shell: >
     curl -sSL https://get.docker.com/ | sh
   args:
