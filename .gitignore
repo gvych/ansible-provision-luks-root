@@ -1,0 +1,4 @@
+*.vdi
+*.log
+.vagrant
+*.retry
