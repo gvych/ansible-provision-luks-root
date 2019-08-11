@@ -6,4 +6,4 @@
   tasks:
     #- debug: var=ansible_devices
     - debug: var=vars
-    - raw: 'echo -n {{ vars["passphrase_" + inventory_hostname|regex_replace("-","_")] }}>/lib/cryptsetup/passfifo'
+#    - raw: 'echo -n {{ vars["passphrase_" + inventory_hostname|regex_replace("-","_")] }}>/lib/cryptsetup/passfifo'

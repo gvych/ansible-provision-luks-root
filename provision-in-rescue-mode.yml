@@ -1,0 +1,21 @@
+---
+- name: Provision OS in rescue mode
+  hosts: new
+  vars_files:
+    - vault.yml
+  roles:
+    - role: luks-root
+      vars:
+        ssh_keys_file: "engineers_ssh_keys"
+  tags: provision
+
+- name: Verify LUKS passwords and reboot hosts
+  hosts: new
+  strategy: free
+  vars_files:
+    - vault.yml
+    - roles/luks-root/defaults/main.yml
+  tasks:
+    - shell: echo {{ vars["passphrase_" + inventory_hostname|regex_replace("-","_")] }} | cryptsetup --test-passphrase luksOpen /dev/{{ luks_root_md }}
+    - raw: /sbin/reboot
+  tags: reboot

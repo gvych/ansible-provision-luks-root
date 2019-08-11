@@ -1,0 +1,23 @@
+---
+
+- name: update-ssh-keys | upload authorized_keys
+  copy:
+    dest:    "{{item}}/authorized_keys"
+    src:     "{{ssh_keys_file|d('~/.ssh/id_rsa.pub')}}"
+    mode:    0644
+  loop:
+    - /mnt/root/.ssh/
+    - /mnt/etc/dropbear-initramfs/
+
+- name: update-ssh-keys | convert ssh keys, update-initrafms
+  shell: >
+    chroot /mnt /bin/bash -c "
+    DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server; rm -v /etc/dropbear*/dropbear_dss_host_key || true;
+    /usr/lib/dropbear/dropbearconvert openssh dropbear /etc/ssh/ssh_host_ecdsa_key /etc/dropbear-initramfs/dropbear_ecdsa_host_key;
+    /usr/lib/dropbear/dropbearconvert openssh dropbear /etc/ssh/ssh_host_rsa_key /etc/dropbear-initramfs/dropbear_rsa_host_key;
+    update-grub2 && update-initramfs -u
+    "
+
+- name: update-ssh-keys | grub-install
+  shell: chroot /mnt grub-install {{item}}
+  loop: "{{luks_disks}}"

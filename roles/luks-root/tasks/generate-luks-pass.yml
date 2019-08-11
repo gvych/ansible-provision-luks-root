@@ -1,0 +1,34 @@
+---
+
+- name: luks-and-lvm | generate LUKS passphrase
+  set_fact:
+    passphrase: "{{ lookup('password', '/dev/null length=25 chars=ascii_letters') }}"
+  when: vars["passphrase_" + inventory_hostname|regex_replace("-","_")] is not defined
+
+
+- name: luks-and-lvm | encrypt passphrase in vault format
+  local_action: command ansible-vault encrypt_string --vault-id 'luks@password.sh' --encrypt-vault-id luks --name "passphrase_{{inventory_hostname|regex_replace('-','_')}}" '{{passphrase}}'
+  become: false
+  register: encrypted_passphrase
+  when: vars["passphrase_" + inventory_hostname|regex_replace("-","_")] is not defined
+
+- name: luks-and-lvm | write passphrase into vault #single thread needed here. otherwise new records are lost for some reason
+  local_action:
+    module: blockinfile
+    block: "{{ vars.hostvars[item].encrypted_passphrase.stdout | d() }}"
+    path:  vault.yml
+    insertbefore: EOF
+    backup: yes
+    marker_begin: "{{item}}"
+    unsafe_writes: no
+  become: false
+  loop: "{{vars['play_hosts']}}"
+  run_once: True
+  when: vars["passphrase_" + item|regex_replace("-","_")] is not defined
+  register: vault_updated
+
+- name: luks-and-lvm | commit vault.yml into git
+  local_action: shell git commit -m 'update vault.yml for {{vars["play_hosts"]|to_json}}' vault.yml
+  become: false
+  run_once: True
+  when: vault_updated.changed

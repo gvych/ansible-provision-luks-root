@@ -1,26 +1,9 @@
-
-- name: luks-and-lvm | generate LUKS passphrase
-  set_fact:
-    passphrase: "{{ lookup('password', '/dev/null length=25 chars=ascii_letters') }}"
-
-- name: luks-and-lvm | encrypt passphrase in vault format
-  local_action: command ansible-vault encrypt_string --vault-id 'luks@password.sh' --name "passphrase_{{inventory_hostname|regex_replace('-','_')}}" '{{passphrase}}'
-  become: false
-  register: encrypted_passphrase
-
-- name: luks-and-lvm | write passphrase into vault
-  local_action:
-    module: blockinfile
-    block: "{{ encrypted_passphrase.stdout }}"
-    path:  vault.yml
-    insertbefore: EOF
-    marker_begin: "{{inventory_hostname}}"
-  become: false
+---
 
 - name: luks-and-lvm | format luks device
-  shell: echo {{ passphrase }} | cryptsetup luksFormat /dev/{{luks_root_md}}
+  shell: echo {{ vars["passphrase_" + inventory_hostname|regex_replace("-","_")] | d(passphrase) }} | cryptsetup luksFormat /dev/{{luks_root_md}}
 - name: luks-and-lvm | open luks device
-  shell: echo {{ passphrase }} | cryptsetup luksOpen   /dev/{{luks_root_md}} {{luks_mapp_name}}
+  shell: echo {{ vars["passphrase_" + inventory_hostname|regex_replace("-","_")] | d(passphrase) }} | cryptsetup luksOpen   /dev/{{luks_root_md}} {{luks_mapp_name}}
 
 - name: luks-and-lvm | create LVM volume group
   lvg:

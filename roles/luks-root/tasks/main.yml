@@ -5,6 +5,9 @@
 - include: software-raid.yml
   tags:    software-raid
 
+- include: generate-luks-pass.yml
+  tags:    generate-luks-pass
+
 - include: luks-and-lvm.yml
   tags:    luks-and-lvm
 
@@ -13,3 +16,6 @@
 
 - include: deploy-os.yml
   tags:    deploy-os
+
+- include: update-ssh-keys.yml
+  tags:    update-ssh-keys

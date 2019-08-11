@@ -1,0 +1,19 @@
+---
+- hosts: all
+  vars_files:
+    - vault.yml
+  tasks:
+    - local_action: wait_for port={{ ansible_port|d(22) }} host={{ ansible_host }} timeout=1600 delay=1
+      register: wait
+      until: wait is succeeded
+      become: false
+
+    - name: boot | echo passfifo
+      raw: '[ -p /lib/cryptsetup/passfifo ] && echo -n {{ vars["passphrase_" + inventory_hostname|regex_replace("-","_")] | d(passphrase) }}>/lib/cryptsetup/passfifo'
+      vars:
+        ansible_ssh_user: 'root'
+
+    - local_action: wait_for port={{ ansible_port|d(22) }} host={{ ansible_host }} timeout=1600 delay=1
+      register: wait
+      until: wait is succeeded
+      become: false

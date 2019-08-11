@@ -1,16 +1,16 @@
 ---
 # defaults file for luks-root
 luks_disks:
-  - /dev/sda
-  - /dev/sdb
+  - /dev/nvme1n1
+  - /dev/nvme0n1
 
 luks_parted_script: >
    mklabel gpt
    disk_set pmbr_boot on
    unit GB
-   mkpart primary 3MB 200MB
+   mkpart primary 3MB 300MB
    set 1 raid on
-   mkpart primary 200MB 100%
+   mkpart primary 300MB 100%
    set 2 raid on
    mkpart primary 1MB 3MB
    name 3 grub

@@ -4,6 +4,7 @@
   filesystem:
     fstype: "{{item.type}}"
     dev: "{{item.src}}"
+    force: yes
   loop: "{{luks_mount_points}}"
 
 - name: mount-chroot | mount luks_mount_points in chroot

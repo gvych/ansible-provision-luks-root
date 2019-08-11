@@ -1,10 +1,5 @@
 ---
 
-- name: deploy-os | pull OS image via docker
-  shell: >
-    docker pull vych/ubuntu-luks-root &&
-    docker run  --name root vych/ubuntu-luks-root
-
 - name: deploy-os | deploy OS using "docker export"
   shell: docker export root | tar xvf -
   args:
@@ -24,7 +19,7 @@
     - dest:  /mnt/etc/crypttab
       line: "{{luks_mapp_name}} UUID={{ansible_devices[luks_root_md].links.uuids[0]}} none luks,discard"
 
-- name: deploy-os | copy resolv.conf,interfaces.d
+- name: deploy-os | setup resolv.conf,interfaces.d
   copy:
     dest:    "{{item.dest}}"
     content: "{{item.content}}"
@@ -39,30 +34,8 @@
         netmask {{ ansible_facts.default_ipv4.netmask }}
         gateway {{ ansible_facts.default_ipv4.gateway }}
 
-- name: deploy-os | upload authorized_keys
-  copy:
-    dest:    "{{item}}/authorized_keys"
-    src:     "{{ssh_keys_file|d('~/.ssh/id_rsa.pub')}}"
-    mode:    0644
-  loop:
-    - /mnt/root/.ssh/
-    - /mnt/etc/dropbear-initramfs/
-
 - name: deploy-os | update initramfs.conf
   lineinfile:
     dest:   /mnt/etc/initramfs-tools/initramfs.conf
     regexp: "DEVICE="
     line:   'DEVICE="IP={{ ansible_default_ipv4.address }}::{{ ansible_default_ipv4.gateway }}:{{ansible_default_ipv4.netmask }}:hostname:eth0"'
-
-- name: deploy-os | convert ssh keys, update-initrafms
-  shell: >
-    chroot /mnt /bin/bash -c "
-    DEBIAN_FRONTEND=noninteractive dpkg-reconfigure openssh-server; rm -v /etc/dropbear*/dropbear_dss_host_key || true;
-    /usr/lib/dropbear/dropbearconvert openssh dropbear /etc/ssh/ssh_host_ecdsa_key /etc/dropbear-initramfs/dropbear_ecdsa_host_key;
-    /usr/lib/dropbear/dropbearconvert openssh dropbear /etc/ssh/ssh_host_rsa_key /etc/dropbear-initramfs/dropbear_rsa_host_key;
-    update-grub2 && update-initramfs -u
-    "
-
-- name: deploy-os | grub-install
-  shell: chroot /mnt grub-install {{item}}
-  loop: "{{luks_disks}}"
