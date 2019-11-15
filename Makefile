@@ -1,7 +1,11 @@
 all:  boot
 
+test:
+	vagrant up
+	ansible-playbook -i hosts-vagrant provision-in-rescue-mode.yml --skip-tags purge-disks
+
 provision:
-	ansible-playbook --private-key ./ssh-rescure-key provision-in-rescue-mode.yml --skip-tags purge
+	ansible-playbook --private-key ./ssh-rescure-key provision-in-rescue-mode.yml --skip-tags purge-disks
 
 boot:
 	ansible-playbook -l new open-luks-on-boot.yml
