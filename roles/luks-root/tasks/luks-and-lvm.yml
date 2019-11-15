@@ -18,5 +18,5 @@
   loop:
     - name: root
       size: "{{luks_root_size}}"
-    - name: data
-      size: "100%FREE"
+    #- name: data
+    #  size: "100%FREE"

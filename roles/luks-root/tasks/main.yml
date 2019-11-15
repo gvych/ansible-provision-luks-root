@@ -1,4 +1,7 @@
 ---
+- include: purge-disks.yml
+  tags:    purge-disks
+
 - include: prepare.yml
   tags:    prepare
 

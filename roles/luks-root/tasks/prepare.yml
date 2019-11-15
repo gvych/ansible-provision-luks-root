@@ -1,38 +1,5 @@
 ---
 
-# CLEANUP
-
-- name: prepare | cleanup stale chroot mounts
-  shell: umount -l /mnt/* /mnt 2>/dev/null || true
-  args:
-    removes: /mnt/boot
-  tags: ['purge']
-
-- name: prepare | cleanup stale luks
-  shell: dmsetup remove vg-root && dmsetup remove vg-data && cryptsetup close {{ luks_mapp_name }}
-  args:
-    removes: /dev/mapper/{{ luks_mapp_name }}
-  tags: ['purge']
-
-- name: prepare | get list of mdadm devices
-  find:
-    paths: /dev
-    patterns: "md?"
-    file_type: any
-  register: md_devs
-  tags: ['purge']
-
-- name: prepare | mdadm purge
-  shell: mdadm --stop --force {{item.path}}
-  loop: "{{ md_devs.files }}"
-  tags: ['purge']
-
-- name: prepare | wipefs disks
-  shell: wipefs -a {{item}}
-  loop: "{{luks_disks}}"
-  tags: ['purge']
-
-# INSTALL DEPENDENCIES
 #- name: prepare | install mdadm
   #package: name=mdadm
 
