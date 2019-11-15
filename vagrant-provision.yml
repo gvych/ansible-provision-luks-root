@@ -1,0 +1,7 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - copy:
+        src: /home/vagrant/.ssh/authorized_keys
+        dest: /root/.ssh/authorized_keys
